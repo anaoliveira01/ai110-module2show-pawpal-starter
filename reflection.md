@@ -4,8 +4,15 @@
 
 **a. Initial design**
 
-- Briefly describe your initial UML design.
-- What classes did you include, and what responsibilities did you assign to each?
+My initial UML design models a pet care scheduling system with four classes: `Owner`, `Pet`, `Task`, and `Scheduler`.
+
+- **Owner** — stores the owner's name and available times, and holds a list of pets. It is responsible for managing pets (`addPet`, `getPets`) and accessing the scheduler (`getSchedule`).
+- **Pet** — stores the pet's name, age, and species, and maintains its own list of assigned tasks. It is responsible for managing tasks at the pet level (`addTask`, `getTasks`).
+- **Task** — represents a single care activity with a name, description, duration in minutes, priority, and an assigned time slot.
+- **Scheduler** — owns a reference to the `Owner` and manages the full list of daily tasks. It is responsible for building the schedule (`buildSchedule`), modifying tasks (`addTask`, `removeTask`), and returning the final daily plan (`getDailyPlan`).
+
+`Owner` owns one or more `Pet`s, uses one `Scheduler`, and the `Scheduler` contains zero or more `Task`s. Each `Pet` can also be directly assigned zero or more `Task`s.
+
 
 **b. Design changes**
 
