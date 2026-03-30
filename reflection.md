@@ -30,8 +30,14 @@ My initial UML design models a pet care scheduling system with four classes: `Ow
 
 **b. Tradeoffs**
 
-- Describe one tradeoff your scheduler makes.
+- Describe one tradeoff your scheduler makes
+
+My scheduler uses a greedy first-fit algorithm: it assigns high-priority tasks first, then moves down the list without reconsidering. This trades **optimal packing for O(n) speed**—some low-priority tasks may not fit even if rearranging would work.
+
 - Why is that tradeoff reasonable for this scenario?
+
+Pet owners need quick feedback, and "good enough fast" beats "perfect slow." High-priority tasks (feeding, meds) are always guaranteed slots, which matters more than fitting every task. Pet schedules are flexible anyway.
+
 
 ---
 

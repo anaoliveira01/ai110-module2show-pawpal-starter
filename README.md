@@ -22,6 +22,17 @@ Your final app should:
 - Display the plan clearly (and ideally explain the reasoning)
 - Include tests for the most important scheduling behaviors
 
+## Smarter Scheduling
+
+The Scheduler class includes advanced features for intelligent task planning:
+
+- **Priority-based assignment:** High-priority tasks (feeding, meds) always get scheduled first using a greedy first-fit algorithm
+- **Conflict detection:** Automatically detects overlapping tasks across pets and provides clear warnings
+- **Flexible sorting:** Sort tasks by time or priority for different views
+- **Pet-based filtering:** Filter the schedule by specific pets or completion status
+- **Recurring tasks:** Daily/weekly tasks automatically generate the next occurrence when marked complete
+- **Optimized performance:** Caches time window calculations to avoid redundant computation
+
 ## Getting started
 
 ### Setup
