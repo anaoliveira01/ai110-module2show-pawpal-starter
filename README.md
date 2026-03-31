@@ -22,6 +22,20 @@ Your final app should:
 - Display the plan clearly (and ideally explain the reasoning)
 - Include tests for the most important scheduling behaviors
 
+## Features Implemented
+
+The PawPal+ system includes the following algorithms and features:
+
+- **Greedy First-Fit Scheduling:** High-priority tasks are assigned to available time slots first, ensuring critical tasks (feeding, meds) always get scheduled. Lower-priority tasks fill remaining slots.
+- **Chronological Sorting:** Tasks can be sorted by start time with unscheduled tasks appearing at the end, enabling users to view their day in order.
+- **Priority-Based Sorting:** Tasks can be reordered by priority level (high → low) to see what's most urgent.
+- **Pet-Based Filtering:** Schedule can be filtered to show only tasks for a specific pet, useful for multi-pet households.
+- **Completion Status Filtering:** View only pending tasks or only completed tasks to track progress.
+- **Conflict Detection Algorithm:** Detects overlapping time slots between any two tasks, flags same-pet vs cross-pet conflicts, and provides descriptive warnings to help users resolve scheduling issues.
+- **Recurring Task Auto-Generation:** When a recurring task (daily/weekly) is marked complete, the system automatically generates the next occurrence with the correct date.
+- **Time Window Caching:** Pre-calculates time windows for conflict detection to avoid redundant calculations and optimize performance.
+- **Dynamic Task Assignment:** Automatically assigns unscheduled tasks to available time slots based on duration and priority, respecting owner availability.
+
 ## Smarter Scheduling
 
 The Scheduler class includes advanced features for intelligent task planning:
