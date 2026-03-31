@@ -104,3 +104,13 @@ The comprehensive test suite validates all critical system behaviors:
 - **Integration:** Task completion, addition, filtering, and scheduling all work together correctly
 
 The system has high confidence in reliability across all major features.
+
+### Demo
+UML:
+<img width="440" height="648" alt="uml_final" src="https://github.com/user-attachments/assets/4786ab3c-8530-46ad-b903-5408d6d0c8b5" />
+
+App:
+<img width="834" height="796" alt="Screenshot 2026-03-30 at 9 07 09 PM" src="https://github.com/user-attachments/assets/6566ad0d-4ca2-4e64-ad07-c95e2bbed4e4" />
+<img width="840" height="778" alt="Screenshot 2026-03-30 at 9 08 39 PM" src="https://github.com/user-attachments/assets/0f8475c8-e35f-4d90-add9-b0bb938004f7" />
+<img width="839" height="754" alt="Screenshot 2026-03-30 at 9 08 48 PM" src="https://github.com/user-attachments/assets/2cc17027-9231-4052-bb31-353e0d7c222c" />
+<img width="781" height="482" alt="Screenshot 2026-03-30 at 9 08 53 PM" src="https://github.com/user-attachments/assets/c3793fb5-b971-4008-a492-353d01193e99" />
