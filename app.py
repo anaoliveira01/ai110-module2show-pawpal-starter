@@ -162,133 +162,159 @@ if st.session_state.owner:
         for t in p.getTasks():
             mins = t.durationMinutes.hour * 60 + t.durationMinutes.minute
             all_pet_tasks.append({
-                "pet": p.name,
-                "task": t.taskName,
-                "duration": f"{mins} min",
-                "priority": {1: "low", 2: "medium", 3: "high"}.get(t.priority, str(t.priority)),
-                "start time": t.timeSlot.strftime("%I:%M %p") if t.timeSlot else "auto",
-                "recurring": t.recurrenceInterval if t.recurring else "—",
+                "🐾 Pet": p.name,
+                "📋 Task": t.taskName,
+                "⏱️ Duration": f"{mins} min",
+                "⚡ Priority": {1: "🟡 Low", 2: "🟠 Medium", 3: "🔴 High"}.get(t.priority, str(t.priority)),
+                "⏰ Start": t.timeSlot.strftime("%I:%M %p") if t.timeSlot else "📍 Auto",
+                "🔄 Recurring": t.recurrenceInterval.capitalize() if t.recurring else "—",
             })
     if all_pet_tasks:
-        st.write("Current tasks:")
-        # Read directly from pet.getTasks() — the live object, not a copy
+        st.subheader("📋 Current Tasks")
         st.table(all_pet_tasks)
     else:
-        st.info("No tasks yet. Add one above.")
+        st.info("📭 No tasks yet. Add one above.")
 else:
-    st.info("No tasks yet. Add one above.")
+    st.info("📭 No tasks yet. Add one above.")
 
 st.divider()
 
-st.subheader("Build Schedule")
-st.caption("This button should call your scheduling logic once you implement it.")
+st.subheader("🤖 Build Smart Schedule")
+with st.expander("ℹ️ How the Scheduler Works", expanded=False):
+    st.markdown("""
+The PawPal+ Scheduler uses **intelligent algorithms** to plan your pet's day:
 
-if st.button("Generate schedule"):
+1. **Priority-Based Assignment:** High-priority tasks (feeding, meds) get scheduled first using a greedy first-fit algorithm
+2. **Conflict Detection:** Automatically detects overlapping tasks across pets and flags them with helpful warnings
+3. **Flexible Scheduling:** Tasks without pinned times are assigned to your free slots in priority order
+4. **Recurring Tasks:** Daily/weekly tasks automatically generate the next occurrence when marked complete
+5. **Smart Sorting:** View your schedule chronologically or by priority with one click
+    """)
+
+if st.button("🚀 Generate Schedule", use_container_width=True):
     # Store the Scheduler in session state so it survives re-runs
     if st.session_state.owner is not None:
         scheduler = Scheduler(owner=st.session_state.owner)
         scheduler.buildSchedule()
         st.session_state.scheduler = scheduler
-
-    st.warning(
-        "Not implemented yet. Next step: create your scheduling logic (classes/functions) and call it here."
-    )
-    st.markdown(
-        """
-Suggested approach:
-1. Design your UML (draft).
-2. Create class stubs (no logic).
-3. Implement scheduling behavior.
-4. Connect your scheduler here and display results.
-"""
-    )
+        st.success("✅ Schedule generated successfully!", icon="✅")
+    else:
+        st.warning("⚠️ Add an owner and pet first!", icon="⚠️")
 
 # Display the schedule if one has been built and stored in session state
 if st.session_state.scheduler:
     scheduler = st.session_state.scheduler
     plan = scheduler.getDailyPlan()
     if plan:
-        st.success("Schedule ready!")
+        st.success("✅ Schedule ready! Daily plan generated using priority-based scheduling.", icon="✅")
 
-        # --- Conflict Detection ---
+        # --- Conflict Detection (Smart Warning System) ---
+        st.markdown("### 🚨 Conflict Detection & Warnings")
         conflicts = scheduler.detectConflicts()
         if conflicts:
-            st.error(f"⚠️ {len(conflicts)} conflict(s) detected:")
-            for msg in conflicts:
-                st.markdown(f"- {msg}")
+            st.warning(f"⚠️ {len(conflicts)} scheduling conflict(s) detected — consider rescheduling", icon="⚠️")
+            conflict_col1, conflict_col2 = st.columns([1, 3])
+            with conflict_col1:
+                st.write("**Conflicts:**")
+            with conflict_col2:
+                for i, msg in enumerate(conflicts, 1):
+                    st.error(f"{i}. {msg}", icon="❌")
+            st.markdown("**💡 Suggestion:** Pin conflicting tasks to different time slots or remove one of them.")
         else:
-            st.info("No scheduling conflicts detected.")
+            st.success("✅ No scheduling conflicts detected — all tasks fit without overlap!", icon="✅")
 
         # --- Recurring Tasks Summary ---
         recurring_tasks = scheduler.getRecurringTasks()
         if recurring_tasks:
-            with st.expander(f"Recurring tasks in this schedule ({len(recurring_tasks)})"):
+            with st.expander(f"🔄 Recurring Tasks ({len(recurring_tasks)})", expanded=True):
+                recurring_data = []
                 for t in recurring_tasks:
-                    pet_label = t.pet.name if t.pet else "?"
-                    st.markdown(f"- **{t.taskName}** ({pet_label}) — repeats {t.recurrenceInterval}")
-
+                    pet_label = t.pet.name if t.pet else "—"
+                    recurring_data.append({
+                        "Task": t.taskName,
+                        "Pet": pet_label,
+                        "Repeats": t.recurrenceInterval.upper(),
+                        "Priority": {1: "Low", 2: "Medium", 3: "High"}.get(t.priority, str(t.priority)),
+                        "Duration": f"{t.durationMinutes.hour * 60 + t.durationMinutes.minute} min",
+                    })
+                st.table(recurring_data)
+                st.caption("📌 These tasks will auto-generate tomorrow when you mark them complete.")
+        
+        st.divider()
         # --- Sort & Filter Controls ---
-        st.markdown("#### Sort & Filter")
+        st.markdown("### 🔍 View & Filter Your Schedule")
         f_col1, f_col2, f_col3 = st.columns(3)
         with f_col1:
-            sort_mode = st.radio("Sort by", ["Time", "Priority"], horizontal=True)
+            sort_mode = st.radio("📊 Sort by", ["Time (Chronological)", "Priority (High→Low)"], horizontal=False)
         with f_col2:
             pet_names = sorted({t.pet.name for t in plan if t.pet})
-            pet_filter = st.selectbox("Filter by pet", ["All"] + pet_names)
+            pet_filter = st.multiselect("🐾 Filter by pet", pet_names, default=pet_names if pet_names else [])
         with f_col3:
-            status_filter = st.selectbox("Filter by status", ["All", "Pending", "Completed"])
+            status_filter = st.selectbox("✓ Filter by status", ["All tasks", "Pending only", "Completed only"])
 
         # Apply sort using the new sortByTime() algorithm
-        if sort_mode == "Time":
+        if "Chronological" in sort_mode:
             display_tasks = scheduler.sortByTime()
+            st.caption("⏰ Tasks in chronological order (earliest first). Unscheduled tasks appear at the end.")
         else:
             display_tasks = sorted(plan, key=lambda t: -t.priority)
+            st.caption("⚡ Tasks sorted by priority (high priority first). Within-priority order by time.")
 
         # Apply pet filter using filterByPet() logic
-        if pet_filter != "All":
-            display_tasks = [t for t in display_tasks if t.pet and t.pet.name == pet_filter]
+        if pet_filter:
+            display_tasks = [t for t in display_tasks if t.pet and t.pet.name in pet_filter]
+        else:
+            display_tasks = []
 
         # Apply status filter using filterByStatus() logic
-        if status_filter == "Pending":
+        if status_filter == "Pending only":
             display_tasks = [t for t in display_tasks if not t.isCompleted]
-        elif status_filter == "Completed":
+        elif status_filter == "Completed only":
             display_tasks = [t for t in display_tasks if t.isCompleted]
 
-        priority_label = {1: "low", 2: "medium", 3: "high"}
+        priority_label = {1: "🟡 Low", 2: "🟠 Medium", 3: "🔴 High"}
         if display_tasks:
-            st.table(
-                [
-                    {
-                        "time": t.timeSlot.strftime("%I:%M %p") if t.timeSlot else "—",
-                        "pet": t.pet.name if t.pet else "—",
-                        "task": t.taskName,
-                        "duration": f"{t.durationMinutes.hour * 60 + t.durationMinutes.minute} min",
-                        "priority": priority_label.get(t.priority, str(t.priority)),
-                        "recurring": f"↻ {t.recurrenceInterval}" if t.recurring else "",
-                        "status": "done" if t.isCompleted else "pending",
-                    }
-                    for t in display_tasks
-                ]
-            )
+            schedule_data = [
+                {
+                    "⏰ Time": t.timeSlot.strftime("%I:%M %p") if t.timeSlot else "⏳ Auto-assign",
+                    "🐾 Pet": t.pet.name if t.pet else "—",
+                    "📋 Task": t.taskName,
+                    "⏱️ Duration": f"{t.durationMinutes.hour * 60 + t.durationMinutes.minute} min",
+                    "⚡ Priority": priority_label.get(t.priority, str(t.priority)),
+                    "🔄 Recurring": f"Every {t.recurrenceInterval.capitalize()}" if t.recurring else "—",
+                    "✓ Status": "✅ Done" if t.isCompleted else "⏳ Pending",
+                }
+                for t in display_tasks
+            ]
+            st.table(schedule_data)
         else:
-            st.info("No tasks match the current filters.")
+            st.info("📭 No tasks match the current filters.")
 
         # --- Mark a task complete ---
-        st.markdown("#### Mark Task Complete")
+        st.markdown("### ✅ Complete a Task")
         pending = [t for t in plan if not t.isCompleted]
         if pending:
+            st.caption("Marking a recurring task complete will auto-generate the next occurrence.")
             mc_col1, mc_col2 = st.columns([3, 1])
             with mc_col1:
-                task_to_complete = st.selectbox(
-                    "Select task",
-                    [t.taskName for t in pending],
+                task_options = [
+                    f"{t.taskName} ({t.pet.name if t.pet else '?'}) @ {t.timeSlot.strftime('%I:%M %p') if t.timeSlot else 'TBD'}"
+                    for t in pending
+                ]
+                selected_idx = st.selectbox(
+                    "Select task to mark done",
+                    range(len(task_options)),
+                    format_func=lambda i: task_options[i],
                     key="complete_select"
                 )
             with mc_col2:
                 st.write("")
                 st.write("")
-                if st.button("Mark done"):
-                    scheduler.completeTask(task_to_complete)
+                if st.button("✓ Mark Done", use_container_width=True):
+                    scheduler.completeTask(pending[selected_idx].taskName)
+                    st.success(f"✅ Task '{pending[selected_idx].taskName}' completed!", icon="✅")
+                    if pending[selected_idx].recurring:
+                        st.info(f"🔄 Next occurrence scheduled: {pending[selected_idx].recurrenceInterval.capitalize()}", icon="ℹ️")
                     st.rerun()
         else:
-            st.success("All tasks are done!")
+            st.success("🎉 All tasks are done! Great job!", icon="🎉")
